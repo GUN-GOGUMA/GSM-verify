@@ -3,6 +3,7 @@ package dev.gungoguma.verify.config;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.time.YearMonth;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public final class VerifyConfig {
@@ -166,13 +167,21 @@ public final class VerifyConfig {
         if (resetMonth < 1 || resetMonth > 12) {
             invalid.add("verification.resetMonth");
         }
-        if (resetDay < 1 || resetDay > 31) {
+        if (resetDay < 1 || resetDay > 31 || !isValidResetDate()) {
             invalid.add("verification.resetDay");
         }
         if (!oauthCallbackPath.startsWith("/")) {
             invalid.add("oauthServer.callbackPath");
         }
         return invalid;
+    }
+
+    private boolean isValidResetDate() {
+        if (resetMonth < 1 || resetMonth > 12 || resetDay < 1) {
+            return false;
+        }
+
+        return YearMonth.of(2000, resetMonth).isValidDay(resetDay);
     }
 
     private static void requireNonBlank(List<String> missing, String key, String value) {

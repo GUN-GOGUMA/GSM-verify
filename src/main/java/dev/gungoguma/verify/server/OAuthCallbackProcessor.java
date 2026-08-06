@@ -53,24 +53,24 @@ public final class OAuthCallbackProcessor {
 
     public OAuthCallbackResult process(Map<String, String> query) {
         if (query.containsKey("error")) {
-            return OAuthCallbackResult.failure("Discord 인증이 취소되었거나 실패했습니다.");
+            return OAuthCallbackResult.failure("Discord verification was cancelled or failed.");
         }
 
         String code = query.get("code");
         String state = query.get("state");
         if (isBlank(code) || isBlank(state)) {
-            return OAuthCallbackResult.failure("인증 요청에 필요한 값이 없습니다. 게임에서 /verify를 다시 실행해 주세요.");
+            return OAuthCallbackResult.failure("Missing verification request values. Run /verify again in game.");
         }
 
         Optional<PendingVerification> pending = pendingStore.findByState(state);
         if (pending.isEmpty()) {
-            return OAuthCallbackResult.failure("인증 요청이 만료되었습니다. 게임에서 /verify를 다시 실행해 주세요.");
+            return OAuthCallbackResult.failure("The verification request expired. Run /verify again in game.");
         }
 
         PendingVerification verification = pending.get();
         if (verificationStore.isVerified(verification.uuid())) {
             pendingStore.remove(verification);
-            return OAuthCallbackResult.failure("이미 인증된 Minecraft 계정입니다.");
+            return OAuthCallbackResult.failure("This Minecraft account is already verified.");
         }
 
         try {
@@ -83,39 +83,39 @@ public final class OAuthCallbackProcessor {
             VerifiedUser verifiedUser = result.user();
             if (verificationStore.findByDiscordId(verifiedUser.discordId()).isPresent()) {
                 pendingStore.remove(verification);
-                return OAuthCallbackResult.failure("이미 다른 Minecraft 계정에 연결된 Discord 계정입니다.");
+                return OAuthCallbackResult.failure("This Discord account is already linked to another Minecraft account.");
             }
 
             verificationStore.save(verifiedUser);
             pendingStore.remove(verification);
             announcementClient.sendVerificationSuccess(verifiedUser);
             publishVerifiedEventAndConnect(verification, verifiedUser);
-            return OAuthCallbackResult.success("인증이 완료되었습니다. 게임으로 돌아가 주세요.");
+            return OAuthCallbackResult.success("Verification complete. Return to the game.");
         } catch (DiscordApiException exception) {
             logger.log(Level.WARNING, exception.getMessage());
             return OAuthCallbackResult.failure(discordApiFailureMessage(exception));
         } catch (IOException exception) {
             logger.log(Level.WARNING, "Discord verification failed: " + exception.getMessage());
-            return OAuthCallbackResult.failure("Discord 인증 처리 중 네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+            return OAuthCallbackResult.failure("A network error occurred while processing Discord verification. Try again later.");
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            return OAuthCallbackResult.failure("Discord 인증 처리가 중단되었습니다. 잠시 후 다시 시도해 주세요.");
+            return OAuthCallbackResult.failure("Discord verification was interrupted. Try again later.");
         } catch (Exception exception) {
             logger.log(Level.WARNING, "Discord verification failed.", exception);
-            return OAuthCallbackResult.failure("Discord 인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+            return OAuthCallbackResult.failure("An error occurred while processing Discord verification. Try again later.");
         }
     }
 
     private String discordApiFailureMessage(DiscordApiException exception) {
         if (exception.isUnauthorized()) {
-            return "Discord 봇 권한 또는 토큰 설정을 확인해 주세요.";
+            return "Check the Discord bot permissions or token setting.";
         }
 
         if (exception.isRateLimited()) {
-            return "Discord 요청이 잠시 제한되었습니다. 잠시 후 다시 시도해 주세요.";
+            return "Discord requests are temporarily rate limited. Try again later.";
         }
 
-        return "Discord 인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+        return "An error occurred while processing Discord verification. Try again later.";
     }
 
     private void publishVerifiedEventAndConnect(PendingVerification verification, VerifiedUser verifiedUser) {

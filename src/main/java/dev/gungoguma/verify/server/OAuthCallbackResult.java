@@ -12,11 +12,11 @@ public final class OAuthCallbackResult {
     }
 
     public static OAuthCallbackResult success(String message) {
-        return new OAuthCallbackResult(true, "인증 요청 확인", message);
+        return new OAuthCallbackResult(true, "Verification Request Confirmed", message);
     }
 
     public static OAuthCallbackResult failure(String message) {
-        return new OAuthCallbackResult(false, "인증 실패", message);
+        return new OAuthCallbackResult(false, "Verification Failed", message);
     }
 
     public boolean success() {

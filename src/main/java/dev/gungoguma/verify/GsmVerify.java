@@ -38,6 +38,11 @@ public final class GsmVerify extends JavaPlugin {
         pendingVerificationStore = new PendingVerificationStore(Clock.systemUTC(), verifyConfig.stateExpireSeconds());
         announcementClient = new DiscordAnnouncementClient(verifyConfig, getLogger());
 
+        if (!validateConfig()) {
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         try {
             verificationStore = new YamlVerificationStore(getDataFolder());
             annualReset = new AnnualVerificationReset(
@@ -56,25 +61,7 @@ public final class GsmVerify extends JavaPlugin {
         }
 
         try {
-            OAuthCallbackProcessor callbackProcessor = new OAuthCallbackProcessor(
-                this,
-                pendingVerificationStore,
-                verificationStore,
-                new DiscordOAuthClient(verifyConfig),
-                new DiscordVerificationService(verifyConfig, new DiscordApiClient(verifyConfig)),
-                announcementClient,
-                bungeeConnector,
-                getLogger()
-            );
-            oauthHttpServer = new OAuthHttpServer(verifyConfig, callbackProcessor);
-            oauthHttpServer.start();
-            getLogger().info(
-                "OAuth callback server started on "
-                    + verifyConfig.oauthServerHost()
-                    + ":"
-                    + verifyConfig.oauthServerPort()
-                    + verifyConfig.oauthCallbackPath()
-            );
+            startOAuthHttpServer();
         } catch (IOException exception) {
             getLogger().severe("Failed to start OAuth callback server: " + exception.getMessage());
             getServer().getPluginManager().disablePlugin(this);
@@ -83,18 +70,10 @@ public final class GsmVerify extends JavaPlugin {
 
         startAnnualResetTask();
 
-        if (verifyConfig.hasMissingRequiredKeys()) {
-            getLogger().warning(verifyConfig.configMissingMessage());
-            getLogger().warning("Missing config keys: " + String.join(", ", verifyConfig.missingRequiredKeys()));
-        }
-        if (verifyConfig.hasInvalidKeys()) {
-            getLogger().warning("Invalid config keys: " + String.join(", ", verifyConfig.invalidKeys()));
-        }
-
         bungeeConnector.registerChannel();
         registerCommands();
         getServer().getPluginManager().registerEvents(
-            new PlayerJoinListener(this, verifyConfig, verificationStore, pendingVerificationStore, bungeeConnector),
+            new PlayerJoinListener(this, this::verifyConfig, verificationStore, pendingVerificationStore, bungeeConnector),
             this
         );
         startPendingCleanupTask();
@@ -135,9 +114,50 @@ public final class GsmVerify extends JavaPlugin {
         return oauthHttpServer;
     }
 
-    public void reloadVerifyConfig() {
+    public boolean reloadVerifyConfig() {
+        VerifyConfig previousConfig = verifyConfig;
         reloadConfig();
         verifyConfig = VerifyConfig.load(getConfig());
+        if (!validateConfig()) {
+            verifyConfig = previousConfig;
+            return false;
+        }
+
+        bungeeConnector.updateConfig(verifyConfig);
+        announcementClient = new DiscordAnnouncementClient(verifyConfig, getLogger());
+        annualReset = new AnnualVerificationReset(getDataFolder(), verifyConfig, verificationStore);
+
+        try {
+            restartOAuthHttpServer();
+        } catch (IOException exception) {
+            getLogger().severe("Failed to restart OAuth callback server: " + exception.getMessage());
+            verifyConfig = previousConfig;
+            bungeeConnector.updateConfig(previousConfig);
+            announcementClient = new DiscordAnnouncementClient(previousConfig, getLogger());
+            annualReset = new AnnualVerificationReset(getDataFolder(), previousConfig, verificationStore);
+            try {
+                restartOAuthHttpServer();
+            } catch (IOException rollbackException) {
+                getLogger().severe("Failed to restore OAuth callback server: " + rollbackException.getMessage());
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean validateConfig() {
+        boolean valid = true;
+        if (verifyConfig.hasMissingRequiredKeys()) {
+            getLogger().warning(verifyConfig.configMissingMessage());
+            getLogger().warning("Missing config keys: " + String.join(", ", verifyConfig.missingRequiredKeys()));
+            valid = false;
+        }
+        if (verifyConfig.hasInvalidKeys()) {
+            getLogger().warning("Invalid config keys: " + String.join(", ", verifyConfig.invalidKeys()));
+            valid = false;
+        }
+        return valid;
     }
 
     private void registerCommands() {
@@ -171,6 +191,36 @@ public final class GsmVerify extends JavaPlugin {
             pendingVerificationStore::cleanupExpired,
             20L * 60L,
             20L * 60L
+        );
+    }
+
+    private void restartOAuthHttpServer() throws IOException {
+        if (oauthHttpServer != null) {
+            oauthHttpServer.stop();
+            oauthHttpServer = null;
+        }
+        startOAuthHttpServer();
+    }
+
+    private void startOAuthHttpServer() throws IOException {
+        OAuthCallbackProcessor callbackProcessor = new OAuthCallbackProcessor(
+            this,
+            pendingVerificationStore,
+            verificationStore,
+            new DiscordOAuthClient(verifyConfig),
+            new DiscordVerificationService(verifyConfig, new DiscordApiClient(verifyConfig)),
+            announcementClient,
+            bungeeConnector,
+            getLogger()
+        );
+        oauthHttpServer = new OAuthHttpServer(verifyConfig, callbackProcessor);
+        oauthHttpServer.start();
+        getLogger().info(
+            "OAuth callback server started on "
+                + verifyConfig.oauthServerHost()
+                + ":"
+                + verifyConfig.oauthServerPort()
+                + verifyConfig.oauthCallbackPath()
         );
     }
 }

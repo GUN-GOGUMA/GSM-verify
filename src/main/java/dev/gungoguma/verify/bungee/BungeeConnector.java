@@ -10,7 +10,7 @@ public final class BungeeConnector {
     public static final String CHANNEL = "BungeeCord";
 
     private final JavaPlugin plugin;
-    private final VerifyConfig config;
+    private VerifyConfig config;
 
     public BungeeConnector(JavaPlugin plugin, VerifyConfig config) {
         this.plugin = plugin;
@@ -23,6 +23,10 @@ public final class BungeeConnector {
 
     public void unregisterChannel() {
         plugin.getServer().getMessenger().unregisterOutgoingPluginChannel(plugin, CHANNEL);
+    }
+
+    public void updateConfig(VerifyConfig config) {
+        this.config = config;
     }
 
     public void connectToSmp(Player player) {

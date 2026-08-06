@@ -98,7 +98,11 @@ public final class VerifyCommand implements CommandExecutor {
             return true;
         }
 
-        plugin.reloadVerifyConfig();
+        if (!plugin.reloadVerifyConfig()) {
+            sender.sendMessage("GSM-Verify config reload failed. Check the server log.");
+            return true;
+        }
+
         config = plugin.verifyConfig();
         oauthUrlBuilder = new DiscordOAuthUrlBuilder(config);
         sender.sendMessage("GSM-Verify config reloaded.");
