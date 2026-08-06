@@ -8,6 +8,7 @@ import dev.gungoguma.verify.discord.DiscordAnnouncementClient;
 import dev.gungoguma.verify.discord.DiscordOAuthClient;
 import dev.gungoguma.verify.discord.DiscordVerificationService;
 import dev.gungoguma.verify.listener.PlayerJoinListener;
+import dev.gungoguma.verify.listener.QueueIsolationListener;
 import dev.gungoguma.verify.oauth.DiscordOAuthUrlBuilder;
 import dev.gungoguma.verify.oauth.PendingVerificationStore;
 import dev.gungoguma.verify.server.OAuthCallbackProcessor;
@@ -74,6 +75,10 @@ public final class GsmVerify extends JavaPlugin {
         registerCommands();
         getServer().getPluginManager().registerEvents(
             new PlayerJoinListener(this, this::verifyConfig, verificationStore, pendingVerificationStore, bungeeConnector),
+            this
+        );
+        getServer().getPluginManager().registerEvents(
+            new QueueIsolationListener(this, this::verifyConfig),
             this
         );
         startPendingCleanupTask();

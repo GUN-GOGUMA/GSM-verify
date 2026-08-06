@@ -16,6 +16,14 @@ oauthServer:
 server:
   smpName: "smp"
 
+queue:
+  world: "world"
+  x: 0.5
+  y: 64.0
+  z: 0.5
+  yaw: 0.0
+  pitch: 0.0
+
 verification:
   stateExpireSeconds: 300
   resetMonth: 1
@@ -23,4 +31,4 @@ verification:
 
 messages:
   prefix: "[GSM-Verify]"
-  configMissing: "GSM-Verify 설정에서 필수 항목이 비어 있습니다. config.yml을 확인해 주세요."
+  configMissing: "Required GSM-Verify config values are missing. Please check config.yml."

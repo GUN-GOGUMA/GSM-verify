@@ -19,6 +19,12 @@ public final class VerifyConfig {
     private final int oauthServerPort;
     private final String oauthCallbackPath;
     private final String smpServerName;
+    private final String queueWorldName;
+    private final double queueX;
+    private final double queueY;
+    private final double queueZ;
+    private final float queueYaw;
+    private final float queuePitch;
     private final int stateExpireSeconds;
     private final int resetMonth;
     private final int resetDay;
@@ -40,6 +46,12 @@ public final class VerifyConfig {
         this.oauthServerPort = config.getInt("oauthServer.port", 27073);
         this.oauthCallbackPath = normalizePath(config.getString("oauthServer.callbackPath", "/callback"));
         this.smpServerName = config.getString("server.smpName", "smp");
+        this.queueWorldName = config.getString("queue.world", "world");
+        this.queueX = config.getDouble("queue.x", 0.5D);
+        this.queueY = config.getDouble("queue.y", 64.0D);
+        this.queueZ = config.getDouble("queue.z", 0.5D);
+        this.queueYaw = (float) config.getDouble("queue.yaw", 0.0D);
+        this.queuePitch = (float) config.getDouble("queue.pitch", 0.0D);
         this.stateExpireSeconds = config.getInt("verification.stateExpireSeconds", 300);
         this.resetMonth = config.getInt("verification.resetMonth", 1);
         this.resetDay = config.getInt("verification.resetDay", 12);
@@ -104,6 +116,30 @@ public final class VerifyConfig {
         return smpServerName;
     }
 
+    public String queueWorldName() {
+        return queueWorldName;
+    }
+
+    public double queueX() {
+        return queueX;
+    }
+
+    public double queueY() {
+        return queueY;
+    }
+
+    public double queueZ() {
+        return queueZ;
+    }
+
+    public float queueYaw() {
+        return queueYaw;
+    }
+
+    public float queuePitch() {
+        return queuePitch;
+    }
+
     public int stateExpireSeconds() {
         return stateExpireSeconds;
     }
@@ -153,6 +189,7 @@ public final class VerifyConfig {
         requireNonBlank(missing, "oauthServer.host", oauthServerHost);
         requireNonBlank(missing, "oauthServer.callbackPath", oauthCallbackPath);
         requireNonBlank(missing, "server.smpName", smpServerName);
+        requireNonBlank(missing, "queue.world", queueWorldName);
         return missing;
     }
 
@@ -172,6 +209,15 @@ public final class VerifyConfig {
         }
         if (!oauthCallbackPath.startsWith("/")) {
             invalid.add("oauthServer.callbackPath");
+        }
+        if (!Double.isFinite(queueX)) {
+            invalid.add("queue.x");
+        }
+        if (!Double.isFinite(queueY)) {
+            invalid.add("queue.y");
+        }
+        if (!Double.isFinite(queueZ)) {
+            invalid.add("queue.z");
         }
         return invalid;
     }
