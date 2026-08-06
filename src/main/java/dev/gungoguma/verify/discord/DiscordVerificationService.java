@@ -20,8 +20,7 @@ public final class DiscordVerificationService {
         this.apiClient = apiClient;
     }
 
-    public DiscordVerificationResult verify(UUID uuid, DiscordTokenResponse token)
-        throws Exception {
+    public DiscordVerificationResult verify(UUID uuid, DiscordTokenResponse token) throws Exception {
         DiscordUser user = apiClient.fetchCurrentUser(token.accessToken());
         DiscordGuildMember member = apiClient.fetchGuildMember(user.id());
         if (member == null) {
@@ -50,16 +49,17 @@ public final class DiscordVerificationService {
             return DiscordVerificationResult.failure("닉네임 형식이 올바르지 않습니다. 예: 1기 홍길동");
         }
 
-        VerifiedUser user = new VerifiedUser(
-            uuid,
-            discordId,
-            matcher.group(2).trim(),
-            Integer.parseInt(matcher.group(1)),
-            null,
-            RoleType.GRADUATE,
-            Instant.now()
+        return DiscordVerificationResult.success(
+            new VerifiedUser(
+                uuid,
+                discordId,
+                matcher.group(2).trim(),
+                Integer.parseInt(matcher.group(1)),
+                null,
+                RoleType.GRADUATE,
+                Instant.now()
+            )
         );
-        return DiscordVerificationResult.success(user);
     }
 
     private DiscordVerificationResult verifyStudent(UUID uuid, String discordId, String nickname) {
@@ -68,15 +68,16 @@ public final class DiscordVerificationService {
             return DiscordVerificationResult.failure("닉네임 형식이 올바르지 않습니다. 예: 1234 홍길동");
         }
 
-        VerifiedUser user = new VerifiedUser(
-            uuid,
-            discordId,
-            matcher.group(2).trim(),
-            null,
-            matcher.group(1),
-            RoleType.STUDENT,
-            Instant.now()
+        return DiscordVerificationResult.success(
+            new VerifiedUser(
+                uuid,
+                discordId,
+                matcher.group(2).trim(),
+                null,
+                matcher.group(1),
+                RoleType.STUDENT,
+                Instant.now()
+            )
         );
-        return DiscordVerificationResult.success(user);
     }
 }

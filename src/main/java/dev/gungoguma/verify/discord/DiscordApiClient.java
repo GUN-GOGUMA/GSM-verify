@@ -61,9 +61,9 @@ public final class DiscordApiClient {
         return new DiscordGuildMember(stringOrNull(json, "nick"), readRoles(json));
     }
 
-    private void requireSuccess(HttpResponse<String> response, String action) throws IOException {
+    private void requireSuccess(HttpResponse<String> response, String action) throws DiscordApiException {
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new IOException(action + " failed with status " + response.statusCode());
+            throw new DiscordApiException(action, response.statusCode());
         }
     }
 

@@ -2,6 +2,7 @@ package dev.gungoguma.verify.server;
 
 import dev.gungoguma.verify.bungee.BungeeConnector;
 import dev.gungoguma.verify.discord.DiscordAnnouncementClient;
+import dev.gungoguma.verify.discord.DiscordApiException;
 import dev.gungoguma.verify.discord.DiscordOAuthClient;
 import dev.gungoguma.verify.discord.DiscordTokenResponse;
 import dev.gungoguma.verify.discord.DiscordVerificationResult;
@@ -80,6 +81,7 @@ public final class OAuthCallbackProcessor {
 
             VerifiedUser verifiedUser = result.user();
             if (verificationStore.findByDiscordId(verifiedUser.discordId()).isPresent()) {
+                pendingStore.remove(verification);
                 return OAuthCallbackResult.failure("이미 다른 Minecraft 계정에 연결된 Discord 계정입니다.");
             }
 
@@ -88,9 +90,12 @@ public final class OAuthCallbackProcessor {
             announcementClient.sendVerificationSuccess(verifiedUser);
             connectOnlinePlayer(verification);
             return OAuthCallbackResult.success("인증이 완료되었습니다. 게임으로 돌아가 주세요.");
+        } catch (DiscordApiException exception) {
+            logger.log(Level.WARNING, exception.getMessage());
+            return OAuthCallbackResult.failure(discordApiFailureMessage(exception));
         } catch (IOException exception) {
             logger.log(Level.WARNING, "Discord verification failed: " + exception.getMessage());
-            return OAuthCallbackResult.failure("Discord 인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+            return OAuthCallbackResult.failure("Discord 인증 처리 중 네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             return OAuthCallbackResult.failure("Discord 인증 처리가 중단되었습니다. 잠시 후 다시 시도해 주세요.");
@@ -98,6 +103,18 @@ public final class OAuthCallbackProcessor {
             logger.log(Level.WARNING, "Discord verification failed.", exception);
             return OAuthCallbackResult.failure("Discord 인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
         }
+    }
+
+    private String discordApiFailureMessage(DiscordApiException exception) {
+        if (exception.isUnauthorized()) {
+            return "Discord 봇 권한 또는 토큰 설정을 확인해 주세요.";
+        }
+
+        if (exception.isRateLimited()) {
+            return "Discord 요청이 잠시 제한되었습니다. 잠시 후 다시 시도해 주세요.";
+        }
+
+        return "Discord 인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
     }
 
     private void connectOnlinePlayer(PendingVerification verification) {

@@ -38,7 +38,7 @@ public final class DiscordOAuthClient {
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new IOException("Discord token exchange failed with status " + response.statusCode());
+            throw new DiscordApiException("Discord token exchange", response.statusCode());
         }
 
         JsonObject json = gson.fromJson(response.body(), JsonObject.class);
