@@ -45,7 +45,7 @@ public final class OAuthHttpServer {
 
     private void handleCallback(HttpExchange exchange) throws IOException {
         if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
-            send(exchange, 405, page(OAuthCallbackResult.failure("지원하지 않는 요청 방식입니다.")));
+            send(exchange, 405, page(OAuthCallbackResult.failure("Unsupported request method.")));
             return;
         }
 

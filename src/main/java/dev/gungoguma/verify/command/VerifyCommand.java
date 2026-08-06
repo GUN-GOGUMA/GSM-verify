@@ -60,9 +60,9 @@ public final class VerifyCommand implements CommandExecutor {
             case "reload" -> reload(sender);
             case "status" -> status(sender, args);
             case "reset" -> reset(sender, args);
-            case "resetall" -> resetAll(sender);
+            case "resetall" -> resetAll(sender, args);
             default -> {
-                sender.sendMessage("사용법: /verify [reload|status|reset|resetall]");
+                sender.sendMessage("Usage: /verify [reload|status|reset|resetall]");
                 yield true;
             }
         };
@@ -75,51 +75,51 @@ public final class VerifyCommand implements CommandExecutor {
         }
 
         if (verificationStore.isVerified(player.getUniqueId())) {
-            player.sendMessage(Component.text(config.messagePrefix() + " 이미 인증되어 있습니다.", NamedTextColor.GREEN));
+            player.sendMessage(Component.text(config.messagePrefix() + " Already verified.", NamedTextColor.GREEN));
             return true;
         }
 
         PendingVerification pending = pendingStore.create(player.getUniqueId(), player.getName());
         String url = oauthUrlBuilder.build(pending.state());
 
-        player.sendMessage(Component.text(config.messagePrefix() + " Discord 인증을 진행해 주세요.", NamedTextColor.YELLOW));
+        player.sendMessage(Component.text(config.messagePrefix() + " Please complete Discord verification.", NamedTextColor.YELLOW));
         player.sendMessage(
-            Component.text("[인증 링크 열기]", NamedTextColor.AQUA)
+            Component.text("[Open verification link]", NamedTextColor.AQUA)
                 .clickEvent(ClickEvent.openUrl(url))
-                .hoverEvent(HoverEvent.showText(Component.text("클릭하여 Discord 인증 페이지를 엽니다.")))
+                .hoverEvent(HoverEvent.showText(Component.text("Open the Discord verification page.")))
         );
-        player.sendMessage(Component.text("인증 링크는 " + config.stateExpireSeconds() + "초 동안 유효합니다.", NamedTextColor.GRAY));
+        player.sendMessage(Component.text("This link expires in " + config.stateExpireSeconds() + " seconds.", NamedTextColor.GRAY));
         return true;
     }
 
     private boolean reload(CommandSender sender) {
         if (!sender.hasPermission("gsmverify.reload")) {
-            sender.sendMessage("권한이 없습니다.");
+            sender.sendMessage("You do not have permission.");
             return true;
         }
 
         plugin.reloadVerifyConfig();
         config = plugin.verifyConfig();
         oauthUrlBuilder = new DiscordOAuthUrlBuilder(config);
-        sender.sendMessage("GSM-Verify 설정을 다시 불러왔습니다.");
+        sender.sendMessage("GSM-Verify config reloaded.");
         return true;
     }
 
     private boolean status(CommandSender sender, String[] args) {
         if (!sender.hasPermission("gsmverify.status")) {
-            sender.sendMessage("권한이 없습니다.");
+            sender.sendMessage("You do not have permission.");
             return true;
         }
 
         if (args.length < 2) {
-            sender.sendMessage("사용법: /verify status <player>");
+            sender.sendMessage("Usage: /verify status <player>");
             return true;
         }
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
         Optional<VerifiedUser> user = verificationStore.findByUuid(target.getUniqueId());
         if (user.isEmpty()) {
-            sender.sendMessage(target.getName() + "님은 인증되어 있지 않습니다.");
+            sender.sendMessage(displayName(target) + " is not verified.");
             return true;
         }
 
@@ -129,52 +129,61 @@ public final class VerifyCommand implements CommandExecutor {
 
     private boolean reset(CommandSender sender, String[] args) {
         if (!sender.hasPermission("gsmverify.reset")) {
-            sender.sendMessage("권한이 없습니다.");
+            sender.sendMessage("You do not have permission.");
             return true;
         }
 
         if (args.length < 2) {
-            sender.sendMessage("사용법: /verify reset <player>");
+            sender.sendMessage("Usage: /verify reset <player>");
             return true;
         }
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
         try {
             if (verificationStore.deleteByUuid(target.getUniqueId())) {
-                sender.sendMessage(target.getName() + "님의 인증 정보를 초기화했습니다.");
+                sender.sendMessage("Reset verification for " + displayName(target) + ".");
             } else {
-                sender.sendMessage(target.getName() + "님의 인증 정보가 없습니다.");
+                sender.sendMessage(displayName(target) + " has no verification data.");
             }
         } catch (IOException exception) {
-            sender.sendMessage("인증 정보 초기화 중 오류가 발생했습니다.");
+            sender.sendMessage("Failed to reset verification data.");
             plugin.getLogger().warning("Failed to reset verification for " + target.getUniqueId() + ": " + exception.getMessage());
         }
         return true;
     }
 
-    private boolean resetAll(CommandSender sender) {
+    private boolean resetAll(CommandSender sender, String[] args) {
         if (!sender.hasPermission("gsmverify.resetall")) {
-            sender.sendMessage("권한이 없습니다.");
+            sender.sendMessage("You do not have permission.");
+            return true;
+        }
+
+        if (args.length < 2 || !"confirm".equalsIgnoreCase(args[1])) {
+            sender.sendMessage("This resets every verification record. Run /verify resetall confirm to continue.");
             return true;
         }
 
         try {
             verificationStore.deleteAll();
-            sender.sendMessage("모든 인증 정보를 초기화했습니다.");
+            sender.sendMessage("Reset all verification data.");
         } catch (IOException exception) {
-            sender.sendMessage("전체 인증 정보 초기화 중 오류가 발생했습니다.");
+            sender.sendMessage("Failed to reset all verification data.");
             plugin.getLogger().warning("Failed to reset all verification data: " + exception.getMessage());
         }
         return true;
     }
 
     private String formatStatus(UUID uuid, VerifiedUser user) {
-        String identity = user.flag() != null ? user.flag() + "기" : user.studentId();
+        String identity = user.flag() != null ? user.flag() + "gi" : user.studentId();
         return "UUID: " + uuid
             + ", Discord ID: " + user.discordId()
-            + ", 이름: " + user.name()
-            + ", 구분: " + user.roleType()
-            + ", 식별: " + identity
-            + ", 인증일: " + TIME_FORMATTER.format(user.verifiedAt());
+            + ", name: " + user.name()
+            + ", role: " + user.roleType()
+            + ", identity: " + identity
+            + ", verifiedAt: " + TIME_FORMATTER.format(user.verifiedAt());
+    }
+
+    private String displayName(OfflinePlayer player) {
+        return player.getName() != null ? player.getName() : player.getUniqueId().toString();
     }
 }

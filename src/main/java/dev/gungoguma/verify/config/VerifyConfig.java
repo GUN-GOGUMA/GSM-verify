@@ -24,6 +24,7 @@ public final class VerifyConfig {
     private final String messagePrefix;
     private final String configMissingMessage;
     private final List<String> missingRequiredKeys;
+    private final List<String> invalidKeys;
 
     private VerifyConfig(FileConfiguration config) {
         this.discordClientId = config.getString("discord.clientId", "");
@@ -47,6 +48,7 @@ public final class VerifyConfig {
             "Required GSM-Verify config values are missing. Please check config.yml."
         );
         this.missingRequiredKeys = findMissingRequiredKeys();
+        this.invalidKeys = findInvalidKeys();
     }
 
     public static VerifyConfig load(FileConfiguration config) {
@@ -129,6 +131,14 @@ public final class VerifyConfig {
         return Collections.unmodifiableList(missingRequiredKeys);
     }
 
+    public boolean hasInvalidKeys() {
+        return !invalidKeys.isEmpty();
+    }
+
+    public List<String> invalidKeys() {
+        return Collections.unmodifiableList(invalidKeys);
+    }
+
     private List<String> findMissingRequiredKeys() {
         List<String> missing = new ArrayList<>();
         requireNonBlank(missing, "discord.clientId", discordClientId);
@@ -143,6 +153,26 @@ public final class VerifyConfig {
         requireNonBlank(missing, "oauthServer.callbackPath", oauthCallbackPath);
         requireNonBlank(missing, "server.smpName", smpServerName);
         return missing;
+    }
+
+    private List<String> findInvalidKeys() {
+        List<String> invalid = new ArrayList<>();
+        if (oauthServerPort < 1 || oauthServerPort > 65535) {
+            invalid.add("oauthServer.port");
+        }
+        if (stateExpireSeconds < 60) {
+            invalid.add("verification.stateExpireSeconds");
+        }
+        if (resetMonth < 1 || resetMonth > 12) {
+            invalid.add("verification.resetMonth");
+        }
+        if (resetDay < 1 || resetDay > 31) {
+            invalid.add("verification.resetDay");
+        }
+        if (!oauthCallbackPath.startsWith("/")) {
+            invalid.add("oauthServer.callbackPath");
+        }
+        return invalid;
     }
 
     private static void requireNonBlank(List<String> missing, String key, String value) {

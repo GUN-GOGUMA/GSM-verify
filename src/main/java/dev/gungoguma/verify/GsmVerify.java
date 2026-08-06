@@ -87,6 +87,9 @@ public final class GsmVerify extends JavaPlugin {
             getLogger().warning(verifyConfig.configMissingMessage());
             getLogger().warning("Missing config keys: " + String.join(", ", verifyConfig.missingRequiredKeys()));
         }
+        if (verifyConfig.hasInvalidKeys()) {
+            getLogger().warning("Invalid config keys: " + String.join(", ", verifyConfig.invalidKeys()));
+        }
 
         bungeeConnector.registerChannel();
         registerCommands();
