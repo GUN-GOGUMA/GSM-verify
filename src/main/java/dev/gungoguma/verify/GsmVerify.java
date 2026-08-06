@@ -91,7 +91,7 @@ public final class GsmVerify extends JavaPlugin {
         bungeeConnector.registerChannel();
         registerCommands();
         getServer().getPluginManager().registerEvents(
-            new PlayerJoinListener(this, verificationStore, bungeeConnector),
+            new PlayerJoinListener(this, verifyConfig, verificationStore, pendingVerificationStore, bungeeConnector),
             this
         );
         startPendingCleanupTask();
