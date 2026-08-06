@@ -3,6 +3,7 @@ package dev.gungoguma.verify;
 import dev.gungoguma.verify.bungee.BungeeConnector;
 import dev.gungoguma.verify.command.VerifyCommand;
 import dev.gungoguma.verify.config.VerifyConfig;
+import dev.gungoguma.verify.discord.DiscordAnnouncementClient;
 import dev.gungoguma.verify.discord.DiscordOAuthClient;
 import dev.gungoguma.verify.listener.PlayerJoinListener;
 import dev.gungoguma.verify.oauth.DiscordOAuthUrlBuilder;
@@ -25,6 +26,7 @@ public final class GsmVerify extends JavaPlugin {
     private AnnualVerificationReset annualReset;
     private PendingVerificationStore pendingVerificationStore;
     private OAuthHttpServer oauthHttpServer;
+    private DiscordAnnouncementClient announcementClient;
 
     @Override
     public void onEnable() {
@@ -32,6 +34,7 @@ public final class GsmVerify extends JavaPlugin {
         verifyConfig = VerifyConfig.load(getConfig());
         bungeeConnector = new BungeeConnector(this, verifyConfig);
         pendingVerificationStore = new PendingVerificationStore(Clock.systemUTC(), verifyConfig.stateExpireSeconds());
+        announcementClient = new DiscordAnnouncementClient(verifyConfig, getLogger());
 
         try {
             verificationStore = new YamlVerificationStore(getDataFolder());
@@ -42,6 +45,7 @@ public final class GsmVerify extends JavaPlugin {
             );
             if (annualReset.resetIfNeeded(LocalDate.now())) {
                 getLogger().info("Verification data was reset for this year.");
+                announcementClient.sendAnnualReset(LocalDate.now());
             }
         } catch (IOException exception) {
             getLogger().severe("Failed to initialize verification storage: " + exception.getMessage());
@@ -137,6 +141,7 @@ public final class GsmVerify extends JavaPlugin {
             try {
                 if (annualReset.resetIfNeeded(LocalDate.now())) {
                     getLogger().info("Verification data was reset for this year.");
+                    announcementClient.sendAnnualReset(LocalDate.now());
                 }
             } catch (IOException exception) {
                 getLogger().severe("Failed to reset verification data: " + exception.getMessage());

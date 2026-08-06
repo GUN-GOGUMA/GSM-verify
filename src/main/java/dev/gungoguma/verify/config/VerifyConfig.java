@@ -138,6 +138,7 @@ public final class VerifyConfig {
         requireNonBlank(missing, "discord.guildId", guildId);
         requireNonBlank(missing, "discord.graduateRoleId", graduateRoleId);
         requireNonBlank(missing, "discord.studentRoleId", studentRoleId);
+        requireNonBlank(missing, "discord.announcementChannelId", announcementChannelId);
         requireNonBlank(missing, "oauthServer.host", oauthServerHost);
         requireNonBlank(missing, "oauthServer.callbackPath", oauthCallbackPath);
         requireNonBlank(missing, "server.smpName", smpServerName);
