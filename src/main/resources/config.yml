@@ -1,1 +1,25 @@
-# GSM-verify configuration
+discord:
+  clientId: ""
+  clientSecret: ""
+  redirectUri: "http://localhost:27073/callback"
+  botToken: ""
+  guildId: ""
+  graduateRoleId: ""
+  studentRoleId: ""
+
+http:
+  host: "0.0.0.0"
+  port: 27073
+  callbackPath: "/callback"
+
+server:
+  smpName: "smp"
+
+verification:
+  stateExpireSeconds: 300
+  resetMonth: 1
+  resetDay: 12
+
+messages:
+  prefix: "[GSM-Verify]"
+  configMissing: "GSM-Verify 설정에서 필수 항목이 비어 있습니다. config.yml을 확인해 주세요."
