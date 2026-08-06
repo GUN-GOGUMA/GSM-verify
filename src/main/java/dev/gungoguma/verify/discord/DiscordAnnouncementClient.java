@@ -9,7 +9,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
-import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,23 +26,23 @@ public final class DiscordAnnouncementClient {
         this.httpClient = HttpClient.newHttpClient();
     }
 
-    public CompletableFuture<Void> sendVerificationSuccess(VerifiedUser user) {
+    public void sendVerificationSuccess(VerifiedUser user) {
         String identity = user.flag() != null ? user.flag() + "기" : user.studentId();
         String description = identity + " " + user.name() + "님이 인증하였습니다.";
-        return sendEmbed("GSM 인증 완료", description, GREEN);
+        sendEmbed("GSM 인증 완료", description, GREEN);
     }
 
-    public CompletableFuture<Void> sendAnnualReset(LocalDate resetDate) {
-        return sendEmbed(
+    public void sendAnnualReset(LocalDate resetDate) {
+        sendEmbed(
             "GSM 인증 정보 초기화",
             resetDate + " 기준으로 Queue 로컬 인증 정보가 초기화되었습니다.",
             BLUE
         );
     }
 
-    private CompletableFuture<Void> sendEmbed(String title, String description, int color) {
+    private void sendEmbed(String title, String description, int color) {
         if (config.announcementChannelId().isBlank()) {
-            return CompletableFuture.completedFuture(null);
+            return;
         }
 
         JsonObject embed = new JsonObject();
@@ -63,7 +62,7 @@ public final class DiscordAnnouncementClient {
             .POST(HttpRequest.BodyPublishers.ofString(payload.toString()))
             .build();
 
-        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.discarding())
+        httpClient.sendAsync(request, HttpResponse.BodyHandlers.discarding())
             .thenAccept(response -> {
                 if (response.statusCode() < 200 || response.statusCode() >= 300) {
                     logger.warning("Discord announcement failed with status " + response.statusCode());
