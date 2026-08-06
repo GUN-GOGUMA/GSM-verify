@@ -8,5 +8,26 @@ libraries:
   - com.google.code.gson:gson:2.11.0
 commands:
   verify:
-    description: Start GSM Discord verification.
-    usage: /verify
+    description: Start or manage GSM Discord verification.
+    usage: /verify [reload|status|reset|resetall]
+permissions:
+  gsmverify.admin:
+    description: Grants every GSM-Verify admin permission.
+    default: op
+    children:
+      gsmverify.reload: true
+      gsmverify.status: true
+      gsmverify.reset: true
+      gsmverify.resetall: true
+  gsmverify.reload:
+    description: Allows /verify reload.
+    default: op
+  gsmverify.status:
+    description: Allows /verify status <player>.
+    default: op
+  gsmverify.reset:
+    description: Allows /verify reset <player>.
+    default: op
+  gsmverify.resetall:
+    description: Allows /verify resetall.
+    default: op

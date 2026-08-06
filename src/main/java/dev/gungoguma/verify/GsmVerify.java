@@ -132,8 +132,14 @@ public final class GsmVerify extends JavaPlugin {
         return oauthHttpServer;
     }
 
+    public void reloadVerifyConfig() {
+        reloadConfig();
+        verifyConfig = VerifyConfig.load(getConfig());
+    }
+
     private void registerCommands() {
         VerifyCommand verifyCommand = new VerifyCommand(
+            this,
             verifyConfig,
             verificationStore,
             pendingVerificationStore,
