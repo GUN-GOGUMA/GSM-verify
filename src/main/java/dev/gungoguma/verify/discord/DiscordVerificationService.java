@@ -13,9 +13,9 @@ public final class DiscordVerificationService {
     private static final Pattern STUDENT_NICKNAME = Pattern.compile("^(\\d{4})\\s+(.+)$");
 
     private final VerifyConfig config;
-    private final DiscordApiClient apiClient;
+    private final DiscordClient apiClient;
 
-    public DiscordVerificationService(VerifyConfig config, DiscordApiClient apiClient) {
+    public DiscordVerificationService(VerifyConfig config, DiscordClient apiClient) {
         this.config = config;
         this.apiClient = apiClient;
     }

@@ -13,7 +13,7 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class DiscordApiClient {
+public final class DiscordApiClient implements DiscordClient {
     private static final String API_BASE = "https://discord.com/api/v10";
 
     private final VerifyConfig config;
@@ -26,6 +26,7 @@ public final class DiscordApiClient {
         this.gson = new Gson();
     }
 
+    @Override
     public DiscordUser fetchCurrentUser(String accessToken) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder(URI.create(API_BASE + "/users/@me"))
             .header("Authorization", "Bearer " + accessToken)
@@ -43,6 +44,7 @@ public final class DiscordApiClient {
         );
     }
 
+    @Override
     public DiscordGuildMember fetchGuildMember(String discordId) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder(
                 URI.create(API_BASE + "/guilds/" + config.guildId() + "/members/" + discordId)

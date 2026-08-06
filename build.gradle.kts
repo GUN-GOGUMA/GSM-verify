@@ -16,6 +16,9 @@ java {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.+")
     compileOnly("com.google.code.gson:gson:2.11.0")
+    testImplementation("io.papermc.paper:paper-api:26.2.build.+")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks {
@@ -28,5 +31,9 @@ tasks {
     withType<JavaCompile> {
         options.encoding = "UTF-8"
         options.compilerArgs.add("-Xlint:all")
+    }
+
+    test {
+        useJUnitPlatform()
     }
 }
