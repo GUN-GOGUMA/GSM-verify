@@ -13,9 +13,9 @@ public final class VerifyConfig {
     private final String guildId;
     private final String graduateRoleId;
     private final String studentRoleId;
-    private final String httpHost;
-    private final int httpPort;
-    private final String httpCallbackPath;
+    private final String oauthServerHost;
+    private final int oauthServerPort;
+    private final String oauthCallbackPath;
     private final String smpServerName;
     private final int stateExpireSeconds;
     private final int resetMonth;
@@ -32,9 +32,9 @@ public final class VerifyConfig {
         this.guildId = config.getString("discord.guildId", "");
         this.graduateRoleId = config.getString("discord.graduateRoleId", "");
         this.studentRoleId = config.getString("discord.studentRoleId", "");
-        this.httpHost = config.getString("http.host", "0.0.0.0");
-        this.httpPort = config.getInt("http.port", 27073);
-        this.httpCallbackPath = normalizePath(config.getString("http.callbackPath", "/callback"));
+        this.oauthServerHost = config.getString("oauthServer.host", "0.0.0.0");
+        this.oauthServerPort = config.getInt("oauthServer.port", 27073);
+        this.oauthCallbackPath = normalizePath(config.getString("oauthServer.callbackPath", "/callback"));
         this.smpServerName = config.getString("server.smpName", "smp");
         this.stateExpireSeconds = config.getInt("verification.stateExpireSeconds", 300);
         this.resetMonth = config.getInt("verification.resetMonth", 1);
@@ -42,7 +42,7 @@ public final class VerifyConfig {
         this.messagePrefix = config.getString("messages.prefix", "[GSM-Verify]");
         this.configMissingMessage = config.getString(
             "messages.configMissing",
-            "GSM-Verify 설정에서 필수 항목이 비어 있습니다. config.yml을 확인해 주세요."
+            "Required GSM-Verify config values are missing. Please check config.yml."
         );
         this.missingRequiredKeys = findMissingRequiredKeys();
     }
@@ -79,16 +79,16 @@ public final class VerifyConfig {
         return studentRoleId;
     }
 
-    public String httpHost() {
-        return httpHost;
+    public String oauthServerHost() {
+        return oauthServerHost;
     }
 
-    public int httpPort() {
-        return httpPort;
+    public int oauthServerPort() {
+        return oauthServerPort;
     }
 
-    public String httpCallbackPath() {
-        return httpCallbackPath;
+    public String oauthCallbackPath() {
+        return oauthCallbackPath;
     }
 
     public String smpServerName() {
@@ -132,8 +132,8 @@ public final class VerifyConfig {
         requireNonBlank(missing, "discord.guildId", guildId);
         requireNonBlank(missing, "discord.graduateRoleId", graduateRoleId);
         requireNonBlank(missing, "discord.studentRoleId", studentRoleId);
-        requireNonBlank(missing, "http.host", httpHost);
-        requireNonBlank(missing, "http.callbackPath", httpCallbackPath);
+        requireNonBlank(missing, "oauthServer.host", oauthServerHost);
+        requireNonBlank(missing, "oauthServer.callbackPath", oauthCallbackPath);
         requireNonBlank(missing, "server.smpName", smpServerName);
         return missing;
     }
