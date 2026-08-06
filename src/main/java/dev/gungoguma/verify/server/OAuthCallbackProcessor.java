@@ -7,6 +7,7 @@ import dev.gungoguma.verify.discord.DiscordOAuthClient;
 import dev.gungoguma.verify.discord.DiscordTokenResponse;
 import dev.gungoguma.verify.discord.DiscordVerificationResult;
 import dev.gungoguma.verify.discord.DiscordVerificationService;
+import dev.gungoguma.verify.event.PlayerVerifiedEvent;
 import dev.gungoguma.verify.model.VerifiedUser;
 import dev.gungoguma.verify.oauth.PendingVerification;
 import dev.gungoguma.verify.oauth.PendingVerificationStore;
@@ -88,7 +89,7 @@ public final class OAuthCallbackProcessor {
             verificationStore.save(verifiedUser);
             pendingStore.remove(verification);
             announcementClient.sendVerificationSuccess(verifiedUser);
-            connectOnlinePlayer(verification);
+            publishVerifiedEventAndConnect(verification, verifiedUser);
             return OAuthCallbackResult.success("인증이 완료되었습니다. 게임으로 돌아가 주세요.");
         } catch (DiscordApiException exception) {
             logger.log(Level.WARNING, exception.getMessage());
@@ -117,12 +118,15 @@ public final class OAuthCallbackProcessor {
         return "Discord 인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
     }
 
-    private void connectOnlinePlayer(PendingVerification verification) {
+    private void publishVerifiedEventAndConnect(PendingVerification verification, VerifiedUser verifiedUser) {
         Bukkit.getScheduler().runTask(plugin, () -> {
             Player player = Bukkit.getPlayer(verification.uuid());
-            if (player != null && player.isOnline()) {
-                bungeeConnector.connectToSmp(player);
+            if (player == null || !player.isOnline()) {
+                return;
             }
+
+            Bukkit.getPluginManager().callEvent(new PlayerVerifiedEvent(player, verifiedUser));
+            bungeeConnector.connectToSmp(player);
         });
     }
 
