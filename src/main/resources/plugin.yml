@@ -4,6 +4,8 @@ main: dev.gungoguma.verify.GsmVerify
 api-version: '26.2'
 author: GUNGOGUMA
 description: GSM Discord verification plugin.
+libraries:
+  - com.google.code.gson:gson:2.11.0
 commands:
   verify:
     description: Start GSM Discord verification.

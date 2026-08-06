@@ -6,6 +6,7 @@ discord:
   guildId: ""
   graduateRoleId: ""
   studentRoleId: ""
+  announcementChannelId: ""
 
 oauthServer:
   host: "0.0.0.0"

@@ -15,6 +15,7 @@ java {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.+")
+    compileOnly("com.google.code.gson:gson:2.11.0")
 }
 
 tasks {

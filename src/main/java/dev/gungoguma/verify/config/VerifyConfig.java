@@ -13,6 +13,7 @@ public final class VerifyConfig {
     private final String guildId;
     private final String graduateRoleId;
     private final String studentRoleId;
+    private final String announcementChannelId;
     private final String oauthServerHost;
     private final int oauthServerPort;
     private final String oauthCallbackPath;
@@ -32,6 +33,7 @@ public final class VerifyConfig {
         this.guildId = config.getString("discord.guildId", "");
         this.graduateRoleId = config.getString("discord.graduateRoleId", "");
         this.studentRoleId = config.getString("discord.studentRoleId", "");
+        this.announcementChannelId = config.getString("discord.announcementChannelId", "");
         this.oauthServerHost = config.getString("oauthServer.host", "0.0.0.0");
         this.oauthServerPort = config.getInt("oauthServer.port", 27073);
         this.oauthCallbackPath = normalizePath(config.getString("oauthServer.callbackPath", "/callback"));
@@ -77,6 +79,10 @@ public final class VerifyConfig {
 
     public String studentRoleId() {
         return studentRoleId;
+    }
+
+    public String announcementChannelId() {
+        return announcementChannelId;
     }
 
     public String oauthServerHost() {

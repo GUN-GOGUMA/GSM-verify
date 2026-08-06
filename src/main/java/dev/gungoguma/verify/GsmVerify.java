@@ -3,9 +3,12 @@ package dev.gungoguma.verify;
 import dev.gungoguma.verify.bungee.BungeeConnector;
 import dev.gungoguma.verify.command.VerifyCommand;
 import dev.gungoguma.verify.config.VerifyConfig;
+import dev.gungoguma.verify.discord.DiscordOAuthClient;
 import dev.gungoguma.verify.listener.PlayerJoinListener;
 import dev.gungoguma.verify.oauth.DiscordOAuthUrlBuilder;
 import dev.gungoguma.verify.oauth.PendingVerificationStore;
+import dev.gungoguma.verify.server.OAuthCallbackProcessor;
+import dev.gungoguma.verify.server.OAuthHttpServer;
 import dev.gungoguma.verify.storage.AnnualVerificationReset;
 import dev.gungoguma.verify.storage.VerificationStore;
 import dev.gungoguma.verify.storage.YamlVerificationStore;
@@ -21,6 +24,7 @@ public final class GsmVerify extends JavaPlugin {
     private VerificationStore verificationStore;
     private AnnualVerificationReset annualReset;
     private PendingVerificationStore pendingVerificationStore;
+    private OAuthHttpServer oauthHttpServer;
 
     @Override
     public void onEnable() {
@@ -45,6 +49,27 @@ public final class GsmVerify extends JavaPlugin {
             return;
         }
 
+        try {
+            OAuthCallbackProcessor callbackProcessor = new OAuthCallbackProcessor(
+                pendingVerificationStore,
+                new DiscordOAuthClient(verifyConfig),
+                getLogger()
+            );
+            oauthHttpServer = new OAuthHttpServer(verifyConfig, callbackProcessor);
+            oauthHttpServer.start();
+            getLogger().info(
+                "OAuth callback server started on "
+                    + verifyConfig.oauthServerHost()
+                    + ":"
+                    + verifyConfig.oauthServerPort()
+                    + verifyConfig.oauthCallbackPath()
+            );
+        } catch (IOException exception) {
+            getLogger().severe("Failed to start OAuth callback server: " + exception.getMessage());
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         startAnnualResetTask();
 
         if (verifyConfig.hasMissingRequiredKeys()) {
@@ -65,6 +90,10 @@ public final class GsmVerify extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (oauthHttpServer != null) {
+            oauthHttpServer.stop();
+        }
+
         if (bungeeConnector != null) {
             bungeeConnector.unregisterChannel();
         }
@@ -86,6 +115,10 @@ public final class GsmVerify extends JavaPlugin {
 
     public PendingVerificationStore pendingVerificationStore() {
         return pendingVerificationStore;
+    }
+
+    public OAuthHttpServer oauthHttpServer() {
+        return oauthHttpServer;
     }
 
     private void registerCommands() {
