@@ -19,7 +19,7 @@ public final class DiscordOAuthUrlBuilder {
             + "?response_type=code"
             + "&client_id=" + encode(config.discordClientId())
             + "&redirect_uri=" + encode(config.discordRedirectUri())
-            + "&scope=" + encode("identify")
+            + "&scope=" + encode("identify guilds guilds.members.read")
             + "&state=" + encode(state);
     }
 

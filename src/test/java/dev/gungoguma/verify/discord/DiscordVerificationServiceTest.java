@@ -49,7 +49,7 @@ final class DiscordVerificationServiceTest {
     }
 
     private DiscordTokenResponse token() {
-        return new DiscordTokenResponse("access", "Bearer", 300, "identify");
+        return new DiscordTokenResponse("access", "Bearer", 300, "identify guilds guilds.members.read");
     }
 
     private record FakeDiscordClient(DiscordGuildMember member) implements DiscordClient {
@@ -59,7 +59,7 @@ final class DiscordVerificationServiceTest {
         }
 
         @Override
-        public DiscordGuildMember fetchGuildMember(String discordId) {
+        public DiscordGuildMember fetchCurrentUserGuildMember(String accessToken) {
             return member;
         }
     }

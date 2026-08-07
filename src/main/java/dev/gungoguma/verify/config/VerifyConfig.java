@@ -10,11 +10,9 @@ public final class VerifyConfig {
     private final String discordClientId;
     private final String discordClientSecret;
     private final String discordRedirectUri;
-    private final String discordBotToken;
     private final String guildId;
     private final String graduateRoleId;
     private final String studentRoleId;
-    private final String announcementChannelId;
     private final String oauthServerHost;
     private final int oauthServerPort;
     private final String oauthCallbackPath;
@@ -37,11 +35,9 @@ public final class VerifyConfig {
         this.discordClientId = config.getString("discord.clientId", "");
         this.discordClientSecret = config.getString("discord.clientSecret", "");
         this.discordRedirectUri = config.getString("discord.redirectUri", "");
-        this.discordBotToken = config.getString("discord.botToken", "");
         this.guildId = config.getString("discord.guildId", "");
         this.graduateRoleId = config.getString("discord.graduateRoleId", "");
         this.studentRoleId = config.getString("discord.studentRoleId", "");
-        this.announcementChannelId = config.getString("discord.announcementChannelId", "");
         this.oauthServerHost = config.getString("oauthServer.host", "0.0.0.0");
         this.oauthServerPort = config.getInt("oauthServer.port", 27073);
         this.oauthCallbackPath = normalizePath(config.getString("oauthServer.callbackPath", "/callback"));
@@ -80,10 +76,6 @@ public final class VerifyConfig {
         return discordRedirectUri;
     }
 
-    public String discordBotToken() {
-        return discordBotToken;
-    }
-
     public String guildId() {
         return guildId;
     }
@@ -94,10 +86,6 @@ public final class VerifyConfig {
 
     public String studentRoleId() {
         return studentRoleId;
-    }
-
-    public String announcementChannelId() {
-        return announcementChannelId;
     }
 
     public String oauthServerHost() {
@@ -181,11 +169,9 @@ public final class VerifyConfig {
         requireNonBlank(missing, "discord.clientId", discordClientId);
         requireNonBlank(missing, "discord.clientSecret", discordClientSecret);
         requireNonBlank(missing, "discord.redirectUri", discordRedirectUri);
-        requireNonBlank(missing, "discord.botToken", discordBotToken);
         requireNonBlank(missing, "discord.guildId", guildId);
         requireNonBlank(missing, "discord.graduateRoleId", graduateRoleId);
         requireNonBlank(missing, "discord.studentRoleId", studentRoleId);
-        requireNonBlank(missing, "discord.announcementChannelId", announcementChannelId);
         requireNonBlank(missing, "oauthServer.host", oauthServerHost);
         requireNonBlank(missing, "oauthServer.callbackPath", oauthCallbackPath);
         requireNonBlank(missing, "server.smpName", smpServerName);

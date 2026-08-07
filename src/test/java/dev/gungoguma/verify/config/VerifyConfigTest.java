@@ -14,11 +14,9 @@ final class VerifyConfigTest {
         config.set("discord.clientId", valid.discordClientId());
         config.set("discord.clientSecret", valid.discordClientSecret());
         config.set("discord.redirectUri", valid.discordRedirectUri());
-        config.set("discord.botToken", valid.discordBotToken());
         config.set("discord.guildId", valid.guildId());
         config.set("discord.graduateRoleId", valid.graduateRoleId());
         config.set("discord.studentRoleId", valid.studentRoleId());
-        config.set("discord.announcementChannelId", valid.announcementChannelId());
         config.set("oauthServer.host", valid.oauthServerHost());
         config.set("oauthServer.port", valid.oauthServerPort());
         config.set("oauthServer.callbackPath", valid.oauthCallbackPath());

@@ -22,7 +22,7 @@ public final class DiscordVerificationService {
 
     public DiscordVerificationResult verify(UUID uuid, DiscordTokenResponse token) throws Exception {
         DiscordUser user = apiClient.fetchCurrentUser(token.accessToken());
-        DiscordGuildMember member = apiClient.fetchGuildMember(user.id());
+        DiscordGuildMember member = apiClient.fetchCurrentUserGuildMember(token.accessToken());
         if (member == null) {
             return DiscordVerificationResult.failure("GSM Discord 서버에 참가한 뒤 다시 인증해 주세요.");
         }

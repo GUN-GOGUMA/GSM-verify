@@ -45,11 +45,11 @@ public final class DiscordApiClient implements DiscordClient {
     }
 
     @Override
-    public DiscordGuildMember fetchGuildMember(String discordId) throws IOException, InterruptedException {
+    public DiscordGuildMember fetchCurrentUserGuildMember(String accessToken) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder(
-                URI.create(API_BASE + "/guilds/" + config.guildId() + "/members/" + discordId)
+                URI.create(API_BASE + "/users/@me/guilds/" + config.guildId() + "/member")
             )
-            .header("Authorization", "Bot " + config.discordBotToken())
+            .header("Authorization", "Bearer " + accessToken)
             .GET()
             .build();
 

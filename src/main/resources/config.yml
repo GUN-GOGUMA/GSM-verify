@@ -2,11 +2,9 @@ discord:
   clientId: ""
   clientSecret: ""
   redirectUri: "http://localhost:27073/callback"
-  botToken: ""
   guildId: ""
   graduateRoleId: ""
   studentRoleId: ""
-  announcementChannelId: ""
 
 oauthServer:
   host: "0.0.0.0"

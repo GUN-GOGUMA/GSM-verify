@@ -36,11 +36,9 @@ discord:
   clientId: ""
   clientSecret: ""
   redirectUri: "http://localhost:27073/callback"
-  botToken: ""
   guildId: ""
   graduateRoleId: ""
   studentRoleId: ""
-  announcementChannelId: ""
 
 oauthServer:
   host: "0.0.0.0"
@@ -56,7 +54,7 @@ verification:
   resetDay: 12
 ```
 
-운영 환경에서는 Discord client secret과 bot token을 문서나 로그에 기록하지 않습니다.
+운영 환경에서는 Discord client secret을 문서나 로그에 기록하지 않습니다.
 
 ## 데이터 파일
 

@@ -37,7 +37,7 @@ public final class GsmVerify extends JavaPlugin {
         verifyConfig = VerifyConfig.load(getConfig());
         bungeeConnector = new BungeeConnector(this, verifyConfig);
         pendingVerificationStore = new PendingVerificationStore(Clock.systemUTC(), verifyConfig.stateExpireSeconds());
-        announcementClient = new DiscordAnnouncementClient(verifyConfig, getLogger());
+        announcementClient = new DiscordAnnouncementClient();
 
         if (!validateConfig()) {
             getServer().getPluginManager().disablePlugin(this);
@@ -129,7 +129,7 @@ public final class GsmVerify extends JavaPlugin {
         }
 
         bungeeConnector.updateConfig(verifyConfig);
-        announcementClient = new DiscordAnnouncementClient(verifyConfig, getLogger());
+        announcementClient = new DiscordAnnouncementClient();
         annualReset = new AnnualVerificationReset(getDataFolder(), verifyConfig, verificationStore);
 
         try {
@@ -138,7 +138,7 @@ public final class GsmVerify extends JavaPlugin {
             getLogger().severe("Failed to restart OAuth callback server: " + exception.getMessage());
             verifyConfig = previousConfig;
             bungeeConnector.updateConfig(previousConfig);
-            announcementClient = new DiscordAnnouncementClient(previousConfig, getLogger());
+            announcementClient = new DiscordAnnouncementClient();
             annualReset = new AnnualVerificationReset(getDataFolder(), previousConfig, verificationStore);
             try {
                 restartOAuthHttpServer();

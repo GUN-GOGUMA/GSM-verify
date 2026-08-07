@@ -109,7 +109,7 @@ public final class OAuthCallbackProcessor {
 
     private String discordApiFailureMessage(DiscordApiException exception) {
         if (exception.isUnauthorized()) {
-            return "Check the Discord bot permissions or token setting.";
+            return "Check the Discord OAuth scopes and redirect URI setting.";
         }
 
         if (exception.isRateLimited()) {
