@@ -45,6 +45,31 @@ public final class DiscordApiClient implements DiscordClient {
     }
 
     @Override
+    public List<DiscordGuild> fetchCurrentUserGuilds(String accessToken) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(API_BASE + "/users/@me/guilds"))
+            .header("Authorization", "Bearer " + accessToken)
+            .GET()
+            .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        requireSuccess(response, "Discord guild list lookup");
+
+        JsonArray json = gson.fromJson(response.body(), JsonArray.class);
+        List<DiscordGuild> guilds = new ArrayList<>();
+        if (json == null) {
+            return guilds;
+        }
+        for (JsonElement element : json) {
+            JsonObject guild = element.getAsJsonObject();
+            guilds.add(new DiscordGuild(
+                guild.get("id").getAsString(),
+                stringOrNull(guild, "name")
+            ));
+        }
+        return guilds;
+    }
+
+    @Override
     public DiscordGuildMember fetchCurrentUserGuildMember(String accessToken) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder(
                 URI.create(API_BASE + "/users/@me/guilds/" + config.guildId() + "/member")
