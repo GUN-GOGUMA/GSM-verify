@@ -9,6 +9,8 @@ import dev.gungoguma.verify.discord.DiscordVerificationResult;
 import dev.gungoguma.verify.discord.DiscordVerificationService;
 import dev.gungoguma.verify.event.PlayerVerifiedEvent;
 import dev.gungoguma.verify.model.VerifiedUser;
+import dev.gungoguma.verify.notify.QueueNotifyPayload;
+import dev.gungoguma.verify.notify.QueueNotifyPayloadCodec;
 import dev.gungoguma.verify.oauth.PendingVerification;
 import dev.gungoguma.verify.oauth.PendingVerificationStore;
 import dev.gungoguma.verify.storage.VerificationStore;
@@ -88,8 +90,7 @@ public final class OAuthCallbackProcessor {
 
             verificationStore.save(verifiedUser);
             pendingStore.remove(verification);
-            announcementClient.sendVerificationSuccess(verifiedUser);
-            publishVerifiedEventAndConnect(verification, verifiedUser);
+            publishVerifiedEventNotifyAndConnect(verification, verifiedUser);
             return OAuthCallbackResult.success("Verification complete. Return to the game.");
         } catch (DiscordApiException exception) {
             logger.log(Level.WARNING, exception.getMessage());
@@ -118,7 +119,7 @@ public final class OAuthCallbackProcessor {
         return "An error occurred while processing Discord verification. Try again later.";
     }
 
-    private void publishVerifiedEventAndConnect(PendingVerification verification, VerifiedUser verifiedUser) {
+    private void publishVerifiedEventNotifyAndConnect(PendingVerification verification, VerifiedUser verifiedUser) {
         Bukkit.getScheduler().runTask(plugin, () -> {
             Player player = Bukkit.getPlayer(verification.uuid());
             if (player == null || !player.isOnline()) {
@@ -126,6 +127,11 @@ public final class OAuthCallbackProcessor {
             }
 
             Bukkit.getPluginManager().callEvent(new PlayerVerifiedEvent(player, verifiedUser));
+            bungeeConnector.forwardToSmp(
+                player,
+                QueueNotifyPayloadCodec.CHANNEL,
+                QueueNotifyPayloadCodec.encode(QueueNotifyPayload.verifySuccess(verifiedUser))
+            );
             bungeeConnector.connectToSmp(player);
         });
     }

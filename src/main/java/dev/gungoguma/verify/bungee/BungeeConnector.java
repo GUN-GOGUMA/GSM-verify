@@ -8,6 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class BungeeConnector {
     public static final String CHANNEL = "BungeeCord";
+    private static final String FORWARD_SUBCHANNEL = "Forward";
 
     private final JavaPlugin plugin;
     private VerifyConfig config;
@@ -37,6 +38,20 @@ public final class BungeeConnector {
         ByteArrayDataOutput output = ByteStreams.newDataOutput();
         output.writeUTF("Connect");
         output.writeUTF(serverName);
+        player.sendPluginMessage(plugin, CHANNEL, output.toByteArray());
+    }
+
+    public void forwardToSmp(Player player, String channel, byte[] payload) {
+        ByteArrayDataOutput inner = ByteStreams.newDataOutput();
+        inner.writeShort(payload.length);
+        inner.write(payload);
+
+        ByteArrayDataOutput output = ByteStreams.newDataOutput();
+        output.writeUTF(FORWARD_SUBCHANNEL);
+        output.writeUTF(config.smpServerName());
+        output.writeUTF(channel);
+        output.writeShort(inner.toByteArray().length);
+        output.write(inner.toByteArray());
         player.sendPluginMessage(plugin, CHANNEL, output.toByteArray());
     }
 }
