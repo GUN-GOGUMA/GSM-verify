@@ -42,16 +42,12 @@ public final class BungeeConnector {
     }
 
     public void forwardToSmp(Player player, String channel, byte[] payload) {
-        ByteArrayDataOutput inner = ByteStreams.newDataOutput();
-        inner.writeShort(payload.length);
-        inner.write(payload);
-
         ByteArrayDataOutput output = ByteStreams.newDataOutput();
         output.writeUTF(FORWARD_SUBCHANNEL);
         output.writeUTF(config.smpServerName());
         output.writeUTF(channel);
-        output.writeShort(inner.toByteArray().length);
-        output.write(inner.toByteArray());
+        output.writeShort(payload.length);
+        output.write(payload);
         player.sendPluginMessage(plugin, CHANNEL, output.toByteArray());
     }
 }
