@@ -4,7 +4,9 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import dev.gungoguma.verify.config.VerifyConfig;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -14,14 +16,25 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public final class OAuthHttpServer {
+    private static final String SUCCESS_ICON_SVG =
+        "<svg viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">"
+            + "<path d=\"M5 13l4 4L19 7\" stroke=\"#ffffff\" stroke-width=\"2.5\" "
+            + "stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>";
+    private static final String FAILURE_ICON_SVG =
+        "<svg viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">"
+            + "<path d=\"M6 6l12 12M18 6L6 18\" stroke=\"#ffffff\" stroke-width=\"2.5\" "
+            + "stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>";
+
     private final VerifyConfig config;
     private final OAuthCallbackProcessor callbackProcessor;
+    private final String resultPageTemplate;
     private HttpServer server;
     private ExecutorService executorService;
 
     public OAuthHttpServer(VerifyConfig config, OAuthCallbackProcessor callbackProcessor) {
         this.config = config;
         this.callbackProcessor = callbackProcessor;
+        this.resultPageTemplate = loadResultPageTemplate();
     }
 
     public void start() throws IOException {
@@ -80,14 +93,30 @@ public final class OAuthHttpServer {
     }
 
     private String page(OAuthCallbackResult result) {
-        String color = result.success() ? "#15803d" : "#b91c1c";
-        return "<!doctype html><html lang=\"ko\"><head><meta charset=\"utf-8\">"
-            + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
-            + "<title>GSM-Verify</title></head>"
-            + "<body style=\"font-family:system-ui,sans-serif;line-height:1.5;padding:32px;\">"
-            + "<h1 style=\"color:" + color + ";\">" + escape(result.title()) + "</h1>"
-            + "<p>" + escape(result.message()) + "</p>"
-            + "</body></html>";
+        String headline = result.success() ? "Verification Done!" : "Verification Failed.";
+        String iconSvg = result.success() ? SUCCESS_ICON_SVG : FAILURE_ICON_SVG;
+        String accentStart = result.success() ? "#4ade80" : "#f87171";
+        String accentEnd = result.success() ? "#15803d" : "#b91c1c";
+        String accentShadow = result.success() ? "rgba(34, 197, 94, 0.35)" : "rgba(239, 68, 68, 0.35)";
+
+        return resultPageTemplate
+            .replace("%%ICON_SVG%%", iconSvg)
+            .replace("%%HEADLINE%%", escape(headline))
+            .replace("%%DETAIL%%", escape(result.message()))
+            .replace("%%ACCENT_START%%", accentStart)
+            .replace("%%ACCENT_END%%", accentEnd)
+            .replace("%%ACCENT_SHADOW%%", accentShadow);
+    }
+
+    private static String loadResultPageTemplate() {
+        try (InputStream inputStream = OAuthHttpServer.class.getResourceAsStream("/web/verify-result.html")) {
+            if (inputStream == null) {
+                throw new IllegalStateException("Missing bundled resource: /web/verify-result.html");
+            }
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException exception) {
+            throw new UncheckedIOException("Failed to load verify-result.html template.", exception);
+        }
     }
 
     private String escape(String value) {
