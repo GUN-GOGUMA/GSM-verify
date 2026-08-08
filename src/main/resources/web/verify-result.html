@@ -6,7 +6,22 @@
 <title>GSM-Verify</title>
 <style>
   :root {
-    color-scheme: dark;
+    color-scheme: light dark;
+    --bg-gradient: radial-gradient(circle at 20% 20%, #2a2f4a 0%, #14172a 45%, #0a0c18 100%);
+    --card-border: rgba(255, 255, 255, 0.16);
+    --card-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    --headline-color: #f5f6fa;
+    --detail-color: rgba(235, 236, 245, 0.62);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg-gradient: radial-gradient(circle at 20% 20%, #f4f6fb 0%, #e7eaf3 45%, #dde1ec 100%);
+      --card-border: rgba(20, 23, 42, 0.12);
+      --card-shadow: 0 24px 60px rgba(20, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      --headline-color: #14172a;
+      --detail-color: rgba(20, 23, 42, 0.62);
+    }
   }
 
   * {
@@ -24,7 +39,7 @@
     justify-content: center;
     padding: 24px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Pretendard, Roboto, sans-serif;
-    background: radial-gradient(circle at 20% 20%, #2a2f4a 0%, #14172a 45%, #0a0c18 100%);
+    background: var(--bg-gradient);
   }
 
   .card {
@@ -33,11 +48,10 @@
     padding: 48px 32px 40px;
     border-radius: 28px;
     text-align: center;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow);
     -webkit-backdrop-filter: blur(24px) saturate(160%);
+    backdrop-filter: blur(24px) saturate(160%);
   }
 
   .icon-wrap {
@@ -61,7 +75,7 @@
     margin: 0;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #f5f6fa;
+    color: var(--headline-color);
     letter-spacing: -0.01em;
   }
 
@@ -69,7 +83,7 @@
     margin: 12px 0 0;
     font-size: 0.95rem;
     line-height: 1.5;
-    color: rgba(235, 236, 245, 0.62);
+    color: var(--detail-color);
   }
 </style>
 </head>
